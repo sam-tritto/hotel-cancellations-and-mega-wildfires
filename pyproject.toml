@@ -1,0 +1,16 @@
+[project]
+name = "hotel-cancellations-and-mega-wildfires"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "diff-diff>=3.5.3",
+    "etwfe>=0.1.4",
+    "ipykernel>=7.3.0",
+    "matplotlib>=3.11.0",
+    "numpy>=2.4.6",
+    "pandas>=3.0.4",
+    "seaborn>=0.13.2",
+    "statsmodels>=0.14.6",
+]
