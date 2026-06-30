@@ -18,16 +18,17 @@ COLORS = {
     'light_bg': '#F8F9FA'
 }
 
-def plot_cancellation_trends(panel_df, segment_name="Group Bookings"):
+def plot_cancellation_trends(panel_df, segment_name="Group Bookings", outcome_var="cancellations"):
     """
-    Plots weekly cancellation trends for treated (Resort Hotel) and control (City Hotel)
+    Plots weekly trends for treated (Resort Hotel) and control (City Hotel)
     groups, highlighting the June 2017 Mega-Wildfires shock.
+    Supports plotting 'cancellations' or 'total_bookings'.
     """
     fig, ax = plt.subplots(figsize=(14, 7), facecolor='white')
     ax.set_facecolor(COLORS['light_bg'])
     
     # Pivot data for plotting
-    plot_df = panel_df.pivot(index='week_start', columns='hotel', values='cancellations')
+    plot_df = panel_df.pivot(index='week_start', columns='hotel', values=outcome_var)
     
     # Plot lines with premium colors and markers
     ax.plot(plot_df.index, plot_df['Resort Hotel'], label='Resort Hotel (Treated)', 
@@ -49,10 +50,11 @@ def plot_cancellation_trends(panel_df, segment_name="Group Bookings"):
             color='#D97706', fontweight='bold', fontsize=12)
 
     # Titles & Labels
-    ax.set_title(f'Weekly Cancellation Counts: {segment_name} Segment', 
+    metric_label = "Cancellations" if outcome_var == "cancellations" else "Total Bookings (Demand)"
+    ax.set_title(f'Weekly {metric_label} Counts: {segment_name} Segment', 
                  fontsize=18, fontweight='bold', color=COLORS['dark_text'], pad=20)
     ax.set_xlabel('Arrival Week Start Date', fontsize=14, fontweight='bold', color=COLORS['dark_text'], labelpad=10)
-    ax.set_ylabel('Number of Cancellations', fontsize=14, fontweight='bold', color=COLORS['dark_text'], labelpad=10)
+    ax.set_ylabel(f'Number of {metric_label}', fontsize=14, fontweight='bold', color=COLORS['dark_text'], labelpad=10)
     
     # Grid and legend styling
     ax.grid(True, linestyle=':', alpha=0.6)
@@ -62,7 +64,7 @@ def plot_cancellation_trends(panel_df, segment_name="Group Bookings"):
     plt.tight_layout()
     return fig
 
-def plot_model_comparison(panel_df, ols_pred, poisson_pred, segment_name="Group Bookings"):
+def plot_model_comparison(panel_df, ols_pred, poisson_pred, segment_name="Group Bookings", outcome_var="total_bookings"):
     """
     Plots the actual vs. predicted values for OLS and Poisson, showing how
     OLS predicts negative counts.
@@ -75,7 +77,8 @@ def plot_model_comparison(panel_df, ols_pred, poisson_pred, segment_name="Group 
     resort_df = panel_df[panel_df['hotel'] == 'Resort Hotel'].copy()
     resort_idx = resort_df.index
     
-    ax1.plot(resort_df['week_start'], resort_df['cancellations'], label='Actual Cancellations', 
+    label_text = "Bookings (Demand)" if outcome_var == "total_bookings" else "Cancellations"
+    ax1.plot(resort_df['week_start'], resort_df[outcome_var], label=f'Actual {label_text}', 
             color=COLORS['treated'], linewidth=2.0, alpha=0.6, marker='o', markersize=3)
     ax1.plot(resort_df['week_start'], ols_pred[resort_idx], label='OLS Predictions', 
             color=COLORS['ols'], linewidth=2.5, linestyle='-')
@@ -89,7 +92,7 @@ def plot_model_comparison(panel_df, ols_pred, poisson_pred, segment_name="Group 
     ax1.set_title('Treated Group (Resort Hotel): Actual vs. Predictions', 
                  fontsize=16, fontweight='bold', color=COLORS['dark_text'], pad=15)
     ax1.set_xlabel('Week Start Date', fontsize=12, color=COLORS['dark_text'])
-    ax1.set_ylabel('Cancellations', fontsize=12, color=COLORS['dark_text'])
+    ax1.set_ylabel(label_text, fontsize=12, color=COLORS['dark_text'])
     ax1.grid(True, linestyle=':', alpha=0.6)
     ax1.legend(frameon=True, fontsize=11)
     
@@ -161,6 +164,67 @@ def plot_log_offset_sensitivity(offsets, coefficients, std_errors):
             '⚠️ Warning:\nChanging the offset shifts\nthe treatment effect & significance!', 
             bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.5', alpha=0.9),
             color='red', fontsize=12, fontweight='bold')
+    
+    plt.tight_layout()
+    return fig
+
+def plot_forest_comparison():
+    """
+    Generates a forest plot comparing the treatment effect estimates and 95% Confidence Intervals
+    for OLS DiD, Poisson DiD, and ETWFE Poisson models.
+    """
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 6.5), facecolor='white')
+    
+    # Left Panel: Level Effects (Change in Bookings/Week)
+    ax1.set_facecolor(COLORS['light_bg'])
+    
+    # Data for level effects
+    labels_level = ['OLS DiD\n(Groups Segment)', 'ETWFE Poisson\n(Online TA)']
+    estimates_level = [10.5000, -9.2331]
+    errors_level = [33.090, 5.1383]
+    
+    # Calculate 95% CIs
+    ci_lower_level = [est - 1.96 * err for est, err in zip(estimates_level, errors_level)]
+    
+    # Plot Level Effects
+    y_pos_level = np.arange(len(labels_level))
+    xerr_level = [estimates_level[i] - ci_lower_level[i] for i in range(len(estimates_level))]
+    ax1.errorbar(estimates_level, y_pos_level, xerr=xerr_level, 
+                 fmt='o', color=COLORS['treated'], ecolor=COLORS['treated'], elinewidth=3, capsize=8, markersize=10)
+    
+    # Zero line
+    ax1.axvline(0, color='black', linestyle='--', linewidth=1.5, alpha=0.7)
+    
+    ax1.set_yticks(y_pos_level)
+    ax1.set_yticklabels(labels_level, fontsize=12, fontweight='bold', color=COLORS['dark_text'])
+    ax1.set_xlabel('Causal Effect (Change in Bookings/Week)', fontsize=13, fontweight='bold', color=COLORS['dark_text'], labelpad=10)
+    ax1.set_title('Treatment Effects in Levels (Bookings/Week)', fontsize=16, fontweight='bold', color=COLORS['dark_text'], pad=15)
+    ax1.grid(True, axis='x', linestyle=':', alpha=0.6)
+    ax1.set_ylim(-0.5, len(labels_level) - 0.5)
+    
+    # Right Panel: Log-scale Coefficients (Poisson DiD)
+    ax2.set_facecolor(COLORS['light_bg'])
+    
+    labels_coeff = ['Poisson DiD\n(Groups Segment)']
+    estimates_coeff = [-2.4290]
+    errors_coeff = [0.839]
+    
+    ci_lower_coeff = [estimates_coeff[0] - 1.96 * errors_coeff[0]]
+    
+    y_pos_coeff = np.arange(len(labels_coeff))
+    xerr_coeff = [estimates_coeff[0] - ci_lower_coeff[0]]
+    ax2.errorbar(estimates_coeff, y_pos_coeff, xerr=xerr_coeff, 
+                 fmt='o', color=COLORS['poisson'], ecolor=COLORS['poisson'], elinewidth=3, capsize=8, markersize=10)
+    
+    # Zero line
+    ax2.axvline(0, color='black', linestyle='--', linewidth=1.5, alpha=0.7)
+    
+    ax2.set_yticks(y_pos_coeff)
+    ax2.set_yticklabels(labels_coeff, fontsize=12, fontweight='bold', color=COLORS['dark_text'])
+    ax2.set_xlabel('Causal Coefficient (Log Scale, θ)', fontsize=13, fontweight='bold', color=COLORS['dark_text'], labelpad=10)
+    ax2.set_title('Treatment Effect in Logs (Incidence Rate Scale)', fontsize=16, fontweight='bold', color=COLORS['dark_text'], pad=15)
+    ax2.grid(True, axis='x', linestyle=':', alpha=0.6)
+    ax2.set_ylim(-0.5, len(labels_coeff) - 0.5)
     
     plt.tight_layout()
     return fig
