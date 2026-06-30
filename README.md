@@ -10,6 +10,10 @@ Difference-in-Differences (DiD) is widely used in economics and data science to 
 1. **Negative Predictions**: Linear regressions predict negative counts (e.g., $-2.4$ cancellations), which are physically impossible.
 2. **The $\log(Y + \epsilon)$ Landmine**: Transforming the target variable using $\log(Y + \epsilon)$ to handle zeros introduces severe specification bias. Changing the arbitrary constant $\epsilon$ shifts the treatment effect coefficients, standard errors, and statistical significance.
 
+### 🔍 Case Study Context & Intuition
+* **The Counter-Intuitive Drop in Cancellations**: A common assumption is that a disaster like a wildfire should *increase* cancellations. However, this study shows that the 2017 Portuguese Mega-Wildfires caused group cancellations to drop to **absolute zero** at the resort. This occurred because the wildfire caused a complete collapse in group travel demand (no new bookings were made for the summer/autumn arrival weeks). Because you cannot cancel a booking that was never made, cancellations fell to zero.
+* **Pre-Wildfire Spikes**: The large peaks in cancellations before the wildfire represent seasonal business-cycle fluctuations. Group bookings are highly "lumpy" (booked in large blocks), leading to massive spikes in cancellations when a group cancels, and near-zero cancellations in off-peak periods.
+
 **Poisson DiD** solves this by using an exponential link function and a log link, modeling **Multiplicative Parallel Trends** instead of linear parallel trends. It naturally accommodates zeros, restricts predictions to non-negative numbers, and estimates the **Incidence Rate Ratio (IRR)** directly.
 
 ---
