@@ -91,7 +91,7 @@ def build_weekly_panel(df, market_segment='Groups', country_group=None):
     panel_df['hotel_id'] = (panel_df['hotel'] == 'Resort Hotel').astype(int)
     
     shock_week_idx = week_to_idx[pd.Timestamp('2017-06-12')]
-    panel_df['first_treated_week'] = np.where(panel_df['treat'] == 1, shock_week_idx, 0)
+    panel_df['first_treated_week'] = np.where(panel_df['treat'] == 1, shock_week_idx, 9999)
     
     panel_df = panel_df.sort_values(['hotel', 'week_start']).reset_index(drop=True)
     return panel_df
@@ -136,7 +136,7 @@ def build_multi_unit_panel(df, market_segment='Online TA', countries=None):
     panel_df['unit_id'] = panel_df['unit_str'].astype('category').cat.codes
     
     shock_week_idx = week_to_idx[pd.Timestamp('2017-06-12')]
-    panel_df['first_treated_week'] = np.where(panel_df['treat'] == 1, shock_week_idx, 0)
+    panel_df['first_treated_week'] = np.where(panel_df['treat'] == 1, shock_week_idx, 9999)
     
     panel_df = panel_df.sort_values(['hotel', 'country', 'week_start']).reset_index(drop=True)
     return panel_df

@@ -180,8 +180,8 @@ def plot_forest_comparison():
     
     # Data for level effects
     labels_level = ['OLS DiD\n(Groups Segment)', 'ETWFE Poisson\n(Online TA)']
-    estimates_level = [10.5000, -9.2331]
-    errors_level = [33.090, 5.1383]
+    estimates_level = [10.5000, -0.8597]
+    errors_level = [33.090, 0.7950]
     
     # Calculate 95% CIs
     ci_lower_level = [est - 1.96 * err for est, err in zip(estimates_level, errors_level)]

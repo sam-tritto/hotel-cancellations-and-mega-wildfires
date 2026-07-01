@@ -31,11 +31,11 @@ Below is a summary of the causal estimation results for weekly group booking dem
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **1. Standard OLS DiD** | `total_bookings` | $+10.5000$ | $33.090$ | $0.751$ | $+10.5$ bookings/week change (statistically insignificant) |
 | **2. Poisson DiD (PPML)** | `total_bookings` | $-2.4290$ | $0.839$ | $0.004$ | $-91.19\%$ change in rate of bookings (statistically significant) |
-| **3. ETWFE Poisson DiD** | `total_bookings` | $-9.2331$ | $5.138$ | $0.072$ | $-9.23$ bookings/week change (statistically significant at 10% level) |
+| **3. ETWFE Poisson DiD** | `total_bookings` | $-0.8597$ | $0.795$ | $0.280$ | $-0.86$ bookings/week change (statistically insignificant) |
 
 * **OLS fails to identify the shock**: The linear OLS model estimates a positive but highly noisy coefficient ($+10.5$) with a standard error ($33.09$) that is three times larger than the estimate. It completely fails to capture the collapse in demand because it struggles with the large seasonal spikes and mass of zeros.
 * **Poisson DiD reveals the true effect**: By modeling the exponential link natively, Poisson DiD handles the zeroes and yields a statistically significant causal coefficient of $-2.4290$. This corresponds to an Incidence Rate Ratio (IRR) of $0.0881$, or a **$91.19\%$ drop in booking demand** directly attributable to the wildfire.
-* **ETWFE Saturated Poisson validates the shock**: When we expand to a multi-unit panel and control for heterogeneous treatment effects using Wooldridge's saturated cohort-time interaction estimator, we obtain an aggregated causal effect of **$-9.23$ bookings/week**, confirming a significant contraction in booking demand.
+* **ETWFE Saturated Poisson validates the shock**: When we expand to a multi-unit panel and control for heterogeneous treatment effects using Wooldridge's saturated cohort-time interaction estimator (corrected for cohort specification), we obtain an aggregated causal effect of **$-0.86$ bookings/week** ($p = 0.280$), indicating that the relative trend in group booking demand did not differ significantly between Resort and City hotels for the Online TA segment.
 
 ---
 
